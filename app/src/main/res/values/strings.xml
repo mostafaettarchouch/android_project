@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">IstakApp</string>
+    <string name="title_activity_main">IstakApp</string>
+    <string name="login_title">Connexion ISTA</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Mot de passe</string>
+    <string name="login_button">Se connecter</string>
+    <string name="dashboard_stagiaire">Espace Stagiaire</string>
+    <string name="dashboard_formateur">Espace Formateur</string>
+</resources>
