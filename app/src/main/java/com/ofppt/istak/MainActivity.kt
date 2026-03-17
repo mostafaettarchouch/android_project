@@ -95,6 +95,19 @@ fun AppNavigation(
     // Request Permissions
     RequestNotificationPermission()
 
+    // Start WebSocket Service if logged in
+    val context = androidx.compose.ui.platform.LocalContext.current
+    LaunchedEffect(startDestination) {
+        if (startDestination != "login" && startDestination != null) {
+            val intent = android.content.Intent(context, com.ofppt.istak.data.websocket.ReverbService::class.java)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        }
+    }
+
     // Handle Notification Click
     LaunchedEffect(startDestination, initialNavigateTo) {
         if (startDestination != null && initialNavigateTo == "messages") {

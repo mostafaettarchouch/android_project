@@ -30,6 +30,17 @@ class TokenManager @Inject constructor(@ApplicationContext private val context: 
         private val CONTACT_INSTAGRAM_KEY = stringPreferencesKey("contact_instagram")
         private val CONTACT_WHATSAPP_KEY = stringPreferencesKey("contact_whatsapp")
         private val DARK_MODE_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("dark_mode")
+        private val USER_ID_KEY = androidx.datastore.preferences.core.intPreferencesKey("user_id")
+    }
+
+    val userId: Flow<Int?> = context.dataStore.data.map { preferences ->
+        preferences[USER_ID_KEY]
+    }
+
+    suspend fun saveUserId(id: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[USER_ID_KEY] = id
+        }
     }
 
     val isDarkMode: Flow<Boolean?> = context.dataStore.data.map { preferences ->

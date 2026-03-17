@@ -32,6 +32,7 @@ class LoginViewModel @Inject constructor(
                     val token = response.body()!!.token
                     android.util.Log.d("LoginViewModel", "Received User: $user")
                     tokenManager.saveToken(token)
+                    tokenManager.saveUserId(user.id)
                     userDao.clearUser() // Clear old users
                     userDao.insertUser(user)
                     _loginState.value = LoginState.Success(user, token)

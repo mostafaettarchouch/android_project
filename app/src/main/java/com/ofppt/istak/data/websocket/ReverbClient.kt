@@ -19,19 +19,18 @@ class ReverbClient @Inject constructor(
 
     private var pusher: Pusher? = null
 
-    // Replace with IP address of your machine on the network if testing on a real device.
-    // Use 10.0.2.2 if testing on Android Emulator
-    private val HOST = "10.0.2.2" 
-    private val PORT = 8080
-    private val APP_KEY = "my-reverb-key" // As defined in Laravel .env
+    // Production Settings
+    private val HOST = "absence.ofppt.dev" 
+    private val PORT = 443
+    private val APP_KEY = "your-app-key" // Make sure this matches your Laravel .env for production
 
     suspend fun setupAndConnect() {
         if (pusher != null && pusher?.connection?.state == ConnectionState.CONNECTED) return
 
         val token = tokenManager.token.first() ?: return
 
-        // Auth endpoint on Laravel backend
-        val authorizer = HttpAuthorizer("http://$HOST:8000/api/broadcasting/auth")
+        // Auth endpoint on production
+        val authorizer = HttpAuthorizer("https://$HOST/api/broadcasting/auth")
         authorizer.setHeaders(mapOf(
             "Authorization" to "Bearer $token",
             "Accept" to "application/json"
@@ -41,7 +40,7 @@ class ReverbClient @Inject constructor(
             setHost(HOST)
             setWsPort(PORT)
             setWssPort(PORT)
-            isUseTLS = false // Set to true in production if using https
+            isUseTLS = true // Production uses https/wss
             setAuthorizer(authorizer)
         }
 
