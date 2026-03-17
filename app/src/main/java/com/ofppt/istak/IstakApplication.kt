@@ -16,9 +16,11 @@ class IstakApplication : Application() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val name = "Messages"
             val descriptionText = "Notifications pour les nouveaux messages"
-            val importance = android.app.NotificationManager.IMPORTANCE_DEFAULT
+            val importance = android.app.NotificationManager.IMPORTANCE_HIGH
             val channel = android.app.NotificationChannel("messages_channel", name, importance).apply {
                 description = descriptionText
+                enableLights(true)
+                enableVibration(true)
             }
             val notificationManager: android.app.NotificationManager =
                 getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager

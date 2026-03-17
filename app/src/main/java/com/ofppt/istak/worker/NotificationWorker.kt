@@ -93,35 +93,38 @@ class NotificationWorker(
         }
     }
 
-    private fun showNotification(context: Context, title: String, content: String, navigateTo: String) {
-        val channelId = "messages_channel"
+    companion object {
+        fun showNotification(context: Context, title: String, content: String, navigateTo: String) {
+            val channelId = "messages_channel"
 
-        // Create Intent to open App
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("navigate_to", navigateTo)
-        }
+            // Create Intent to open App
+            val intent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("navigate_to", navigateTo)
+            }
 
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(
-            context, navigateTo.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+            val pendingIntent: PendingIntent = PendingIntent.getActivity(
+                context, System.currentTimeMillis().toInt(), intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
 
-        // Parse HTML content
-        val styledContent = androidx.core.text.HtmlCompat.fromHtml(content, androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY)
+            // Parse HTML content
+            val styledContent = androidx.core.text.HtmlCompat.fromHtml(content, androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY)
 
-        val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.ic_popup_reminder)
-            .setContentTitle(title)
-            .setContentText(styledContent)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(styledContent))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
+            val builder = NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                .setContentTitle(title)
+                .setContentText(styledContent)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(styledContent))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
 
-        try {
-            NotificationManagerCompat.from(context).notify(navigateTo.hashCode(), builder.build())
-        } catch (e: SecurityException) {
-            // Permission not granted
+            try {
+                NotificationManagerCompat.from(context).notify(System.currentTimeMillis().toInt(), builder.build())
+            } catch (e: SecurityException) {
+                // Permission not granted
+            }
         }
     }
 }

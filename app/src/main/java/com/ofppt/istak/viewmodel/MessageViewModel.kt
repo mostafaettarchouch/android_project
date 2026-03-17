@@ -2,12 +2,18 @@ package com.ofppt.istak.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.content.Context
+import android.util.Log
+import com.pusher.client.channel.PusherEvent
+import com.pusher.client.channel.PrivateChannelEventListener
 import com.ofppt.istak.data.model.Message
 import com.ofppt.istak.data.model.SendMessageRequest
 import com.ofppt.istak.data.model.User
 import com.ofppt.istak.data.remote.ApiService
 import com.ofppt.istak.data.websocket.ReverbClient
+import com.ofppt.istak.worker.NotificationWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +30,8 @@ sealed class MessageUiState {
 @HiltViewModel
 class MessageViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val reverbClient: ReverbClient
+    private val reverbClient: ReverbClient,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MessageUiState>(MessageUiState.Loading)
@@ -56,11 +63,29 @@ class MessageViewModel @Inject constructor(
             
             val channel = pusher?.subscribePrivate(channelName)
             
-            channel?.bind("message.sent") { _ ->
-                // Simple approach: When any message is received on this channel, fetch the updated list
-                fetchMessages() 
-                fetchUnreadCount()
-            }
+            channel?.bind("message.sent", object : PrivateChannelEventListener {
+                override fun onEvent(event: PusherEvent?) {
+                    // Simple approach: When any message is received on this channel, fetch the updated list
+                    fetchMessages() 
+                    fetchUnreadCount()
+
+                    // Trigger notification
+                    NotificationWorker.showNotification(
+                        context,
+                        "Nouveau Message",
+                        "Vous avez reçu un nouveau message de l'administration.",
+                        "messages"
+                    )
+                }
+
+                override fun onAuthenticationFailure(message: String?, e: Exception?) {
+                    Log.e("MessageViewModel", "Auth failure for channel $channelName: $message", e)
+                }
+
+                override fun onSubscriptionSucceeded(channelName: String?) {
+                    Log.d("MessageViewModel", "Subscribed to $channelName")
+                }
+            })
         }
     }
 

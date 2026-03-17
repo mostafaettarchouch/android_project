@@ -1,11 +1,14 @@
 package com.ofppt.istak.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ofppt.istak.data.model.NewsArticle
 import com.ofppt.istak.data.repository.StagiaireRepository
 import com.ofppt.istak.data.websocket.ReverbClient
+import com.ofppt.istak.worker.NotificationWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class NewsViewModel @Inject constructor(
     private val repository: StagiaireRepository,
-    private val reverbClient: ReverbClient
+    private val reverbClient: ReverbClient,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NewsUiState>(NewsUiState.Loading)
@@ -37,6 +41,14 @@ class NewsViewModel @Inject constructor(
                 // When a new article is published, simply reload the list from the server
                 // (or parse the JSON event to prepend it instantly)
                 loadNews()
+
+                // Trigger notification
+                NotificationWorker.showNotification(
+                    context,
+                    "Nouvelle Actualité",
+                    "Une nouvelle actualité a été publiée.",
+                    "news"
+                )
             }
         }
     }
