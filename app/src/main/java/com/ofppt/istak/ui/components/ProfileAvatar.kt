@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
 
+import com.ofppt.istak.ui.theme.neumorphic
+
 @Composable
 fun ProfileAvatar(
     name: String,
@@ -30,23 +32,18 @@ fun ProfileAvatar(
         if (name.isNotBlank()) name.first().toString().uppercase(Locale.ROOT) else "?"
     }
 
-    val backgroundColor = remember(name) {
-        generateColor(name)
-    }
-
     Box(
         modifier = modifier
             .size(size)
-            .clip(CircleShape)
-            .background(backgroundColor)
+            .neumorphic(shape = CircleShape, elevation = 4.dp)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = initial,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = (size.value / 2).sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.ExtraBold
         )
     }
 }

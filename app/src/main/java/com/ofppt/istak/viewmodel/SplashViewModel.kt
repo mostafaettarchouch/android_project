@@ -21,6 +21,8 @@ class SplashViewModel @Inject constructor(
     private val _startDestination = MutableStateFlow<String?>(null)
     val startDestination: StateFlow<String?> = _startDestination
 
+    val isDarkMode = tokenManager.isDarkMode
+
     init {
         checkAppStatus()
     }

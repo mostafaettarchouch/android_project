@@ -1,7 +1,8 @@
 package com.ofppt.istak.ui.screens.news
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,6 +24,9 @@ import com.ofppt.istak.data.model.NewsArticle
 import com.ofppt.istak.viewmodel.NewsUiState
 import com.ofppt.istak.viewmodel.NewsViewModel
 
+import com.ofppt.istak.ui.theme.neumorphic
+import com.ofppt.istak.ui.theme.NeumorphicColors
+
 @Composable
 fun NewsScreen(
     viewModel: NewsViewModel = hiltViewModel()
@@ -41,7 +45,7 @@ fun NewsScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 24.dp, top = 16.dp)
             )
 
         when (uiState) {
@@ -57,12 +61,16 @@ fun NewsScreen(
                             text = (uiState as NewsUiState.Error).message,
                             color = MaterialTheme.colorScheme.error
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = { viewModel.loadNews() },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .height(48.dp)
+                                .width(120.dp)
+                                .neumorphic(shape = RoundedCornerShape(12.dp), elevation = 4.dp)
+                                .clickable { viewModel.loadNews() },
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text("Réessayer")
+                            Text("Réessayer", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -71,12 +79,12 @@ fun NewsScreen(
                 val articles = (uiState as NewsUiState.Success).articles
                 if (articles.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Aucune actualité pour le moment.", color = Color.Gray)
+                        Text("Aucune actualité pour le moment.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 } else {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                        contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp)
                     ) {
                         items(articles) { article ->
                             NewsItem(article = article, onClick = { selectedArticle = article })
@@ -97,40 +105,41 @@ fun NewsScreen(
 }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsItem(article: NewsArticle, onClick: () -> Unit) {
-    // For the list item, we still want a summary, but we should decode HTML entities
-    // and maybe strip tags for a clean preview.
     val summary = remember(article.content) {
         val spanned = androidx.core.text.HtmlCompat.fromHtml(article.content, androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY)
         spanned.toString().trim()
     }
 
-    Card(
-        onClick = onClick,
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha=0.3f), RoundedCornerShape(24.dp))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .neumorphic(shape = RoundedCornerShape(24.dp), elevation = 4.dp)
+            .clickable { onClick() }
+            .padding(20.dp)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = article.created_at.take(10),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                Box(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(8.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                        .neumorphic(shape = RoundedCornerShape(8.dp), elevation = 1.dp)
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = article.created_at.take(10),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = article.title,
@@ -139,34 +148,34 @@ fun NewsItem(article: NewsArticle, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = summary,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 20.sp
             )
 
             if (article.author != null) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        modifier = Modifier.size(28.dp)
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .neumorphic(shape = CircleShape, elevation = 2.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = article.author.name.firstOrNull()?.toString() ?: "?",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
-                        }
+                        Text(
+                            text = article.author.name.firstOrNull()?.toString() ?: "?",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = article.author.name,
                         style = MaterialTheme.typography.labelMedium,
@@ -189,7 +198,8 @@ fun NewsDetailDialog(article: NewsArticle, onDismiss: () -> Unit) {
             Text(
                 text = article.title,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         text = {
@@ -201,21 +211,28 @@ fun NewsDetailDialog(article: NewsArticle, onDismiss: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = article.created_at.take(10),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Box(
+                        modifier = Modifier
+                            .neumorphic(shape = RoundedCornerShape(8.dp), elevation = 1.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = article.created_at.take(10),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     if (article.author != null) {
                         Text(
                             text = "Par: ${article.author.name}",
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Use AndroidView to render HTML
                 androidx.compose.ui.viewinterop.AndroidView(
@@ -225,6 +242,7 @@ fun NewsDetailDialog(article: NewsArticle, onDismiss: () -> Unit) {
                             setTextIsSelectable(true)
                             setTextColor(android.graphics.Color.DKGRAY)
                             textSize = 16f
+                            setLineSpacing(0f, 1.2f)
                         }
                     },
                     update = { textView ->
@@ -237,11 +255,20 @@ fun NewsDetailDialog(article: NewsArticle, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Fermer", color = MaterialTheme.colorScheme.primary)
+            Box(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .height(48.dp)
+                    .width(100.dp)
+                    .neumorphic(shape = RoundedCornerShape(12.dp), elevation = 4.dp)
+                    .clickable { onDismiss() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Fermer", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedCornerShape(28.dp)
     )
 }
+

@@ -6,10 +6,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -35,6 +38,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ofppt.istak.ui.theme.NeumorphicColors
+import com.ofppt.istak.ui.theme.neumorphic
 import com.ofppt.istak.viewmodel.LoginState
 import com.ofppt.istak.viewmodel.LoginViewModel
 import kotlinx.coroutines.delay
@@ -59,25 +64,6 @@ fun LoginScreen(
 
     val loginState by viewModel.loginState.collectAsState()
 
-    // Animation states for floating background elements
-    val infiniteTransition = rememberInfiniteTransition(label = "bg_float")
-    val offsetY1 by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 50f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "circle1"
-    )
-    val offsetY2 by infiniteTransition.animateFloat(
-        initialValue = 50f,
-        targetValue = -30f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(5000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "circle2"
-    )
-
     // Entrance Animation setup
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -90,23 +76,6 @@ fun LoginScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Floating Background Elements to simulate Glassmorphism depth
-        Box(
-            modifier = Modifier
-                .offset(x = (-50).dp, y = (-50 + offsetY1).dp)
-                .size(250.dp)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
-                .blur(80.dp)
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(x = 50.dp, y = (50 + offsetY2).dp)
-                .size(300.dp)
-                .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f), CircleShape)
-                .blur(100.dp)
-        )
-
         AnimatedVisibility(
             visible = isVisible,
             enter = fadeIn(tween(800)) + slideInVertically(initialOffsetY = { 100 }, animationSpec = tween(800)),
@@ -115,31 +84,26 @@ fun LoginScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header Logo
+                // Header Logo with Neumorphism
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
-                            ),
-                            shape = CircleShape
-                        )
-                        .shadow(8.dp, CircleShape),
+                        .size(100.dp)
+                        .neumorphic(shape = CircleShape, elevation = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.School,
                         contentDescription = "Logo",
-                        tint = Color.White,
-                        modifier = Modifier.size(40.dp)
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(50.dp)
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 
                 Text(
                     text = "ISTAK OFPPT",
@@ -152,217 +116,192 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-                // Glassmorphic Card Form
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    border = androidx.compose.foundation.BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
-                    )
+                // Neumorphic Form Container
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .neumorphic(shape = RoundedCornerShape(28.dp), elevation = 10.dp)
+                        .padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    // Neumorphic Input for Email
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .neumorphic(shape = RoundedCornerShape(16.dp), elevation = 4.dp, isPressed = false)
                     ) {
-                        OutlinedTextField(
+                        TextField(
                             value = email,
                             onValueChange = { email = it; captchaError = false },
-                            label = { Text("Nom d'utilisateur / CEF") },
+                            placeholder = { Text("Nom d'utilisateur / CEF") },
                             leadingIcon = {
                                 Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
                             )
                         )
+                    }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                        OutlinedTextField(
+                    // Neumorphic Input for Password
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .neumorphic(shape = RoundedCornerShape(16.dp), elevation = 4.dp)
+                    ) {
+                        TextField(
                             value = password,
                             onValueChange = { password = it; captchaError = false },
-                            label = { Text("Mot de passe") },
+                            placeholder = { Text("Mot de passe") },
                             leadingIcon = {
                                 Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             },
                             visualTransformation = PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
                             )
                         )
+                    }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                        // Advanced Captcha Box
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                    // Advanced Captcha Box
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(60.dp)
+                                .neumorphic(shape = RoundedCornerShape(16.dp), elevation = 2.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(60.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                                contentAlignment = Alignment.Center
+                            val onBgColor = MaterialTheme.colorScheme.onBackground
+                            
+                            // Captcha Text
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                val canvasPrimary = MaterialTheme.colorScheme.primary
-                                val canvasSecondary = MaterialTheme.colorScheme.secondary
-                                val onBgColor = MaterialTheme.colorScheme.onBackground
-
-                                Canvas(modifier = Modifier.fillMaxSize()) {
-                                    val canvasWidth = size.width
-                                    val canvasHeight = size.height
-                                    
-                                    // 1. Draw Noise Dots
-                                    repeat(150) {
-                                        drawCircle(
-                                            color = onBgColor.copy(alpha = 0.15f),
-                                            radius = Random.nextFloat() * 3f,
-                                            center = Offset(
-                                                x = Random.nextFloat() * canvasWidth,
-                                                y = Random.nextFloat() * canvasHeight
-                                            )
-                                        )
-                                    }
-
-                                    // 2. Draw Bezier Interference Lines
-                                    repeat(4) {
-                                        val path = Path().apply {
-                                            moveTo(0f, Random.nextFloat() * canvasHeight)
-                                            quadraticBezierTo(
-                                                canvasWidth / 2, Random.nextFloat() * canvasHeight,
-                                                canvasWidth, Random.nextFloat() * canvasHeight
-                                            )
-                                        }
-                                        drawPath(
-                                            path = path,
-                                            color = listOf(canvasPrimary, canvasSecondary).random().copy(alpha = 0.4f),
-                                            style = Stroke(width = Random.nextFloat() * 3f + 1f)
-                                        )
-                                    }
-                                }
-
-                                // Captcha Text with slight individual character offset/rotation simulation
-                                Row(
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    captchaCode.forEach { char ->
-                                        Text(
-                                            text = char.toString(),
-                                            fontSize = 28.sp,
-                                            fontWeight = FontWeight.ExtraBold,
-                                            letterSpacing = 4.sp,
-                                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-                                            modifier = Modifier.offset(
-                                                x = (Random.nextFloat() * 4 - 2).dp,
-                                                y = (Random.nextFloat() * 8 - 4).dp
-                                            )
-                                        )
-                                    }
+                                captchaCode.forEach { char ->
+                                    Text(
+                                        text = char.toString(),
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        letterSpacing = 4.sp,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    )
                                 }
                             }
-                            
-                            Spacer(modifier = Modifier.width(12.dp))
-                            
-                            IconButton(
-                                onClick = { 
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .neumorphic(shape = CircleShape, elevation = 4.dp)
+                                .clickable {
                                     captchaCode = generateCaptchaString()
                                     captchaInput = ""
                                 },
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape)
-                            ) {
-                                Icon(Icons.Default.Refresh, contentDescription = "Refresh Captcha", tint = MaterialTheme.colorScheme.primary)
-                            }
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = MaterialTheme.colorScheme.primary)
                         }
+                    }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        OutlinedTextField(
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .neumorphic(shape = RoundedCornerShape(16.dp), elevation = 4.dp)
+                    ) {
+                        TextField(
                             value = captchaInput,
                             onValueChange = { captchaInput = it; captchaError = false },
-                            label = { Text("Code de sécurité") },
+                            placeholder = { Text("Code de sécurité") },
                             isError = captchaError,
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        
-                        AnimatedVisibility(visible = captchaError) {
-                            Text(
-                                "Code CAPTCHA incorrect", 
-                                color = MaterialTheme.colorScheme.error, 
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(top = 4.dp).align(Alignment.Start)
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
                             )
-                        }
+                        )
+                    }
+                    
+                    AnimatedVisibility(visible = captchaError) {
+                        Text(
+                            "Code CAPTCHA incorrect", 
+                            color = MaterialTheme.colorScheme.error, 
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(top = 8.dp).align(Alignment.Start)
+                        )
+                    }
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
 
-                        Button(
-                            onClick = {
+                    // Neumorphic Action Button
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .neumorphic(
+                                shape = RoundedCornerShape(16.dp), 
+                                elevation = 6.dp,
+                                lightShadowColor = if (loginState !is LoginState.Loading) NeumorphicColors.lightShadow() else Color.Transparent,
+                                darkShadowColor = if (loginState !is LoginState.Loading) NeumorphicColors.darkShadow() else Color.Transparent
+                            )
+                            .clickable(enabled = loginState !is LoginState.Loading) {
                                 if (captchaInput.equals(captchaCode, ignoreCase = true)) {
                                     captchaError = false
                                     viewModel.login(email, password)
                                 } else {
                                     captchaError = true
-                                    // Optionally logic to regenerate on multiple fails
                                 }
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .shadow(8.dp, RoundedCornerShape(16.dp), spotColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(16.dp),
-                            contentPadding = PaddingValues(0.dp),
-                            enabled = loginState !is LoginState.Loading
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (loginState is LoginState.Loading) {
-                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 3.dp)
-                                } else {
-                                    Text("Se Connecter", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                }
-                            }
-                        }
-
-                        AnimatedVisibility(visible = loginState is LoginState.Error) {
-                            Spacer(modifier = Modifier.height(16.dp))
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (loginState is LoginState.Loading) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        } else {
                             Text(
-                                text = (loginState as? LoginState.Error)?.message ?: "",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Medium
+                                "Se Connecter", 
+                                fontSize = 18.sp, 
+                                fontWeight = FontWeight.Bold, 
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
+                    }
+
+                    AnimatedVisibility(visible = loginState is LoginState.Error) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = (loginState as? LoginState.Error)?.message ?: "",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }

@@ -34,9 +34,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            IstakTheme {
+            val splashViewModel: com.ofppt.istak.viewmodel.SplashViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val darkModePref by splashViewModel.isDarkMode.collectAsState(initial = null)
+            val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+            val useDarkMode = darkModePref ?: isSystemDark
+
+            IstakTheme(darkTheme = useDarkMode) {
                 val navigateTo = intent.getStringExtra("navigate_to")
-                AppNavigation(initialNavigateTo = navigateTo)
+                AppNavigation(viewModel = splashViewModel, initialNavigateTo = navigateTo)
             }
         }
     }

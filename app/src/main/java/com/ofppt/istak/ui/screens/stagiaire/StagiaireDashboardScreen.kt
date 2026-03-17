@@ -35,6 +35,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ofppt.istak.viewmodel.StagiaireUiState
 import com.ofppt.istak.viewmodel.StagiaireViewModel
 
+import com.ofppt.istak.ui.theme.neumorphic
+import com.ofppt.istak.ui.theme.NeumorphicColors
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StagiaireDashboardScreen(
@@ -50,7 +53,7 @@ fun StagiaireDashboardScreen(
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             when (uiState) {
                 is StagiaireUiState.Loading -> {
@@ -122,43 +125,40 @@ fun StagiaireDashboardScreen(
                                 }
                             }
                         }
-                        com.ofppt.istak.ui.components.ProfileAvatar(
-                            name = data.student.prenom,
-                            size = 56.dp,
-                            onClick = onNavigateToProfile
-                        )
+                        
+                        Box(modifier = Modifier.neumorphic(shape = CircleShape, elevation = 4.dp).padding(4.dp)) {
+                            com.ofppt.istak.ui.components.ProfileAvatar(
+                                name = data.student.prenom,
+                                size = 52.dp,
+                                onClick = onNavigateToProfile
+                            )
+                        }
                     }
 
-                    // BENTO GRID LAYOUT
-                    
-                    // Row 1: Access Status Card (Full Width)
+                    // Neumorphic Access Status Card
                     val isAuthorized = data.student.is_authorized_to_enter
                     val statusColor = if (isAuthorized) Color(0xFF10B981) else Color(0xFFEF4444)
-                    val statusBgColor = if (isAuthorized) Color(0xFF10B981).copy(alpha = 0.1f) else Color(0xFFEF4444).copy(alpha = 0.1f)
                     val statusText = if (isAuthorized) "Accès Autorisé" else "Accès Interdit"
                     val statusDesc = if (isAuthorized) "Vous pouvez entrer en classe." else "Veuillez contacter l'administration."
                     val statusIcon = if (isAuthorized) Icons.Default.CheckCircle else Icons.Default.Block
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth().height(140.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = statusBgColor),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, statusColor.copy(alpha=0.3f))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .neumorphic(shape = RoundedCornerShape(28.dp), elevation = 6.dp)
+                            .padding(24.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxSize().padding(24.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(64.dp)
-                                    .background(statusColor.copy(alpha = 0.2f), CircleShape),
+                                    .size(60.dp)
+                                    .neumorphic(shape = CircleShape, elevation = 2.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(imageVector = statusIcon, contentDescription = null, tint = statusColor, modifier = Modifier.size(36.dp))
+                                Icon(imageVector = statusIcon, contentDescription = null, tint = statusColor, modifier = Modifier.size(32.dp))
                             }
                             Spacer(modifier = Modifier.width(20.dp))
-                            Column(verticalArrangement = Arrangement.Center) {
+                            Column {
                                 Text(
                                     text = statusText,
                                     style = MaterialTheme.typography.titleLarge,
@@ -174,7 +174,7 @@ fun StagiaireDashboardScreen(
                         }
                     }
 
-                    // Row 2: Total Hours (Left) & Sanctions count (Right)
+                    // Row 2: Stats Grid
                     Row(
                         modifier = Modifier.fillMaxWidth().height(120.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -195,38 +195,43 @@ fun StagiaireDashboardScreen(
                         )
                     }
 
-                    // Row 3: Justified vs Unjustified (Left & Right)
+                    // Row 3: Justified vs Unjustified
                     Row(
-                        modifier = Modifier.fillMaxWidth().height(140.dp),
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Card(
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .neumorphic(shape = RoundedCornerShape(24.dp), elevation = 4.dp)
+                                .padding(16.dp),
+                            contentAlignment = Alignment.CenterStart
                         ) {
-                            Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center) {
+                            Column {
                                 Text("Justifiées", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("${data.stats.total_justified}h", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text("${data.stats.total_justified}h", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))
                             }
                         }
                         
-                        Card(
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
-                            shape = RoundedCornerShape(24.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .neumorphic(shape = RoundedCornerShape(24.dp), elevation = 4.dp)
+                                .padding(16.dp),
+                            contentAlignment = Alignment.CenterStart
                         ) {
-                            Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center) {
+                            Column {
                                 Text("Non Justifiées", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("${data.stats.total_unjustified}h", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = Color(0xFFEF4444))
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text("${data.stats.total_unjustified}h", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = Color(0xFFEF4444))
                             }
                         }
                     }
 
                     // History Section
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Historique Récent",
                         style = MaterialTheme.typography.titleLarge,
@@ -234,7 +239,7 @@ fun StagiaireDashboardScreen(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         if (data.absences.isEmpty()) {
                             Text("Aucune absence enregistrée.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         } else {
@@ -244,30 +249,33 @@ fun StagiaireDashboardScreen(
                         }
                     }
                     
-                    Spacer(modifier = Modifier.height(80.dp)) // Bottom padding for FAB
+                    Spacer(modifier = Modifier.height(100.dp))
                 }
             }
         }
         
-        // Chat FAB
+        // Chat FAB with Neumorphism
         val messageViewModel: com.ofppt.istak.viewmodel.MessageViewModel = hiltViewModel()
         val unreadCount by messageViewModel.unreadCount.collectAsState()
         var showChatDialog by remember { mutableStateOf(false) }
 
-        FloatingActionButton(
-            onClick = { showChatDialog = true },
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .shadow(16.dp, CircleShape, spotColor = MaterialTheme.colorScheme.primary),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = Color.White
+                .padding(24.dp)
+                .size(64.dp)
+                .neumorphic(shape = CircleShape, elevation = 6.dp)
+                .clickable { showChatDialog = true },
+            contentAlignment = Alignment.Center
         ) {
             Box {
-                Icon(imageVector = Icons.Default.Email, contentDescription = "Messages")
+                Icon(imageVector = Icons.Default.Email, contentDescription = "Messages", tint = MaterialTheme.colorScheme.primary)
                 if (unreadCount > 0) {
-                    Badge(modifier = Modifier.align(Alignment.TopEnd)) {
-                        Text(text = unreadCount.toString())
+                    Badge(
+                        modifier = Modifier.align(Alignment.TopEnd).offset(x = 4.dp, y = (-4).dp),
+                        containerColor = MaterialTheme.colorScheme.error
+                    ) {
+                        Text(text = unreadCount.toString(), color = Color.White)
                     }
                 }
             }
@@ -284,18 +292,24 @@ fun StagiaireDashboardScreen(
 
 @Composable
 fun BentoCard(modifier: Modifier = Modifier, title: String, value: String, icon: ImageVector, color: Color) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha=0.2f))
+    Box(
+        modifier = modifier
+            .neumorphic(shape = RoundedCornerShape(24.dp), elevation = 4.dp)
+            .padding(16.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.Start
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(28.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .neumorphic(shape = RoundedCornerShape(10.dp), elevation = 1.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+            }
             Column {
                 Text(text = value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = color)
                 Text(text = title, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -306,15 +320,14 @@ fun BentoCard(modifier: Modifier = Modifier, title: String, value: String, icon:
 
 @Composable
 fun ActivityItem(absence: com.ofppt.istak.data.model.Absence) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .neumorphic(shape = RoundedCornerShape(20.dp), elevation = 3.dp)
+            .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -355,6 +368,7 @@ fun ActivityItem(absence: com.ofppt.istak.data.model.Absence) {
         }
     }
 }
+
 
 fun formatDate(dateStr: String): String {
     return try {

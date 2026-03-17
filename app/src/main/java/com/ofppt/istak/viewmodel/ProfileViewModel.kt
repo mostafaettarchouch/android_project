@@ -31,9 +31,16 @@ class ProfileViewModel @Inject constructor(
     val logoutState: StateFlow<LogoutState> = _logoutState
 
     val contactInfo = tokenManager.contactInfo
+    val isDarkMode = tokenManager.isDarkMode
 
     init {
         loadProfile()
+    }
+
+    fun toggleDarkMode(isDark: Boolean) {
+        viewModelScope.launch {
+            tokenManager.saveDarkMode(isDark)
+        }
     }
 
     private fun loadProfile() {

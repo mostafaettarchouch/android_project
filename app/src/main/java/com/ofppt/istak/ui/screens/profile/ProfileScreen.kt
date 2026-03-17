@@ -1,9 +1,12 @@
 package com.ofppt.istak.ui.screens.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Logout
@@ -23,6 +26,12 @@ import com.ofppt.istak.viewmodel.PasswordUpdateState
 import com.ofppt.istak.viewmodel.ProfileUiState
 import com.ofppt.istak.viewmodel.ProfileViewModel
 
+import com.ofppt.istak.ui.theme.neumorphic
+import com.ofppt.istak.ui.theme.NeumorphicColors
+
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
@@ -30,6 +39,10 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val logoutState by viewModel.logoutState.collectAsState()
+    val darkModePref by viewModel.isDarkMode.collectAsState(initial = null)
+    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val isDark = darkModePref ?: isSystemDark
+    
     var showPasswordDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(logoutState) {
@@ -42,7 +55,8 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -50,7 +64,7 @@ fun ProfileScreen(
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 32.dp, top = 16.dp)
         )
 
         when (uiState) {
@@ -63,81 +77,132 @@ fun ProfileScreen(
             is ProfileUiState.Success -> {
                 val user = (uiState as ProfileUiState.Success).user
 
-                // Profile Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha=0.3f))
+                // Neumorphic Profile Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .neumorphic(shape = RoundedCornerShape(28.dp), elevation = 6.dp)
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        modifier = Modifier.padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            modifier = Modifier.size(88.dp)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .neumorphic(shape = CircleShape, elevation = 4.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(20.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
                         Text(text = user.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         Text(text = user.email ?: "", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(8.dp))
                         if (user.stagiaire_cef != null) {
-                            Text(text = "CEF: ${user.stagiaire_cef}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = "CEF: ${user.stagiaire_cef}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Actions
-                Button(
-                    onClick = { showPasswordDialog = true },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.onSurface),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                ) {
-                    Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text("Changer le mot de passe", fontWeight = FontWeight.Bold)
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Button(
-                    onClick = { viewModel.logout() },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                ) {
-                    if (logoutState is LogoutState.Loading) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.error)
-                    } else {
-                        Icon(Icons.Default.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text("Se déconnecter", fontWeight = FontWeight.Bold)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
+
+                // Neumorphic Theme Toggle
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .neumorphic(shape = RoundedCornerShape(16.dp), elevation = 4.dp)
+                        .clickable { viewModel.toggleDarkMode(!isDark) }
+                        .padding(horizontal = 20.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isDark) Icons.Default.DarkMode else Icons.Default.LightMode, 
+                                contentDescription = null, 
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = if (isDark) "Mode Sombre" else "Mode Clair", 
+                                fontWeight = FontWeight.Bold, 
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Switch(
+                            checked = isDark,
+                            onCheckedChange = { viewModel.toggleDarkMode(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Neumorphic Action Buttons
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .neumorphic(shape = RoundedCornerShape(16.dp), elevation = 4.dp)
+                        .clickable { showPasswordDialog = true }
+                        .padding(horizontal = 20.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("Changer le mot de passe", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .neumorphic(
+                            shape = RoundedCornerShape(16.dp), 
+                            elevation = 4.dp,
+                            darkShadowColor = MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
+                        )
+                        .clickable(enabled = logoutState !is LogoutState.Loading) { viewModel.logout() }
+                        .padding(horizontal = 20.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (logoutState is LogoutState.Loading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.error)
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text("Se déconnecter", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(48.dp))
 
                 // Contact Info
                 val contactInfo by viewModel.contactInfo.collectAsState(initial = emptyMap())
                 if (contactInfo.isNotEmpty()) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Contact & Support", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         
                         val phone = contactInfo["phone"]
                         val email = contactInfo["email"]
@@ -149,40 +214,31 @@ fun ProfileScreen(
                             Text(text = "Email: $email", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
                         
                         val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
                         
-                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                             if (!contactInfo["facebook"].isNullOrBlank()) {
-                                IconButton(onClick = { uriHandler.openUri(contactInfo["facebook"]!!) }) {
-                                    Icon(
-                                        imageVector = com.ofppt.istak.ui.theme.SocialIcons.Facebook,
-                                        contentDescription = "Facebook",
-                                        tint = Color(0xFF1877F2),
-                                        modifier = Modifier.size(32.dp)
-                                    )
-                                }
+                                SocialIconNeumorphic(
+                                    icon = com.ofppt.istak.ui.theme.SocialIcons.Facebook,
+                                    color = Color(0xFF1877F2),
+                                    onClick = { uriHandler.openUri(contactInfo["facebook"]!!) }
+                                )
                             }
                             if (!contactInfo["instagram"].isNullOrBlank()) {
-                                IconButton(onClick = { uriHandler.openUri(contactInfo["instagram"]!!) }) {
-                                    Icon(
-                                        imageVector = com.ofppt.istak.ui.theme.SocialIcons.Instagram,
-                                        contentDescription = "Instagram",
-                                        tint = Color(0xFFE4405F),
-                                        modifier = Modifier.size(32.dp)
-                                    )
-                                }
+                                SocialIconNeumorphic(
+                                    icon = com.ofppt.istak.ui.theme.SocialIcons.Instagram,
+                                    color = Color(0xFFE4405F),
+                                    onClick = { uriHandler.openUri(contactInfo["instagram"]!!) }
+                                )
                             }
                             if (!contactInfo["whatsapp"].isNullOrBlank()) {
-                                IconButton(onClick = { uriHandler.openUri(contactInfo["whatsapp"]!!) }) {
-                                    Icon(
-                                        imageVector = com.ofppt.istak.ui.theme.SocialIcons.WhatsApp,
-                                        contentDescription = "WhatsApp",
-                                        tint = Color(0xFF25D366),
-                                        modifier = Modifier.size(32.dp)
-                                    )
-                                }
+                                SocialIconNeumorphic(
+                                    icon = com.ofppt.istak.ui.theme.SocialIcons.WhatsApp,
+                                    color = Color(0xFF25D366),
+                                    onClick = { uriHandler.openUri(contactInfo["whatsapp"]!!) }
+                                )
                             }
                         }
                     }
@@ -206,6 +262,19 @@ fun ProfileScreen(
 }
 
 @Composable
+fun SocialIconNeumorphic(icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .neumorphic(shape = CircleShape, elevation = 4.dp)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(28.dp))
+    }
+}
+
+@Composable
 fun ChangePasswordDialog(
     onDismiss: () -> Unit,
     onSubmit: (String, String, String) -> Unit,
@@ -218,55 +287,11 @@ fun ChangePasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Changer le mot de passe") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = currentPassword,
-                    onValueChange = { currentPassword = it },
-                    label = { Text("Mot de passe actuel") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = newPassword,
-                    onValueChange = { newPassword = it },
-                    label = { Text("Nouveau mot de passe") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
-                    label = { Text("Confirmer le mot de passe") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true
-                )
-
-                if (updateState is PasswordUpdateState.Error) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = (updateState as PasswordUpdateState.Error).message,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                if (updateState is PasswordUpdateState.Success) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = (updateState as PasswordUpdateState.Success).message,
-                        color = Color(0xFF4CAF50),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-        },
         confirmButton = {
             Button(
                 onClick = { onSubmit(currentPassword, newPassword, confirmPassword) },
-                enabled = updateState !is PasswordUpdateState.Loading
+                enabled = updateState !is PasswordUpdateState.Loading,
+                shape = RoundedCornerShape(12.dp)
             ) {
                 if (updateState is PasswordUpdateState.Loading) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
@@ -279,6 +304,70 @@ fun ChangePasswordDialog(
             TextButton(onClick = onDismiss) {
                 Text("Annuler")
             }
-        }
+        },
+        title = { Text("Changer le mot de passe", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(modifier = Modifier.padding(top = 16.dp)) {
+                Box(modifier = Modifier.fillMaxWidth().neumorphic(shape = RoundedCornerShape(12.dp), elevation = 2.dp)) {
+                    TextField(
+                        value = currentPassword,
+                        onValueChange = { currentPassword = it },
+                        placeholder = { Text("Mot de passe actuel") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        )
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(modifier = Modifier.fillMaxWidth().neumorphic(shape = RoundedCornerShape(12.dp), elevation = 2.dp)) {
+                    TextField(
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        placeholder = { Text("Nouveau mot de passe") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        )
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(modifier = Modifier.fillMaxWidth().neumorphic(shape = RoundedCornerShape(12.dp), elevation = 2.dp)) {
+                    TextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        placeholder = { Text("Confirmer le mot de passe") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        )
+                    )
+                }
+
+                if (updateState is PasswordUpdateState.Error) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(text = (updateState as PasswordUpdateState.Error).message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+                if (updateState is PasswordUpdateState.Success) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(text = (updateState as PasswordUpdateState.Success).message, color = Color(0xFF4CAF50), style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(24.dp)
     )
 }
+

@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -24,6 +26,9 @@ import com.ofppt.istak.data.model.Session
 import com.ofppt.istak.viewmodel.ExamScheduleViewModel
 import com.ofppt.istak.viewmodel.ScheduleUiState
 
+import com.ofppt.istak.ui.theme.neumorphic
+import com.ofppt.istak.ui.theme.NeumorphicColors
+
 @Composable
 fun ExamScheduleScreen(
     viewModel: ExamScheduleViewModel = hiltViewModel()
@@ -41,7 +46,7 @@ fun ExamScheduleScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 24.dp, top = 16.dp)
             )
 
         when (uiState) {
@@ -61,13 +66,14 @@ fun ExamScheduleScreen(
             is ScheduleUiState.Success -> {
                 val data = (uiState as ScheduleUiState.Success).data
 
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                    shape = RoundedCornerShape(24.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.2f)),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                // Neumorphic Info Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .neumorphic(shape = RoundedCornerShape(24.dp), elevation = 6.dp)
+                        .padding(20.dp)
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
+                    Column {
                         Text(
                             text = "Groupe: ${data.group_name}",
                             style = MaterialTheme.typography.titleMedium,
@@ -82,26 +88,31 @@ fun ExamScheduleScreen(
                     }
                 }
 
-                // Week Navigation (Only if multiple weeks)
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Neumorphic Week Navigation
                 if (!data.available_weeks.isNullOrEmpty() && data.available_weeks.size > 1) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .neumorphic(shape = RoundedCornerShape(20.dp), elevation = 4.dp)
+                            .padding(8.dp)
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            IconButton(onClick = { viewModel.previousWeek() }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Previous Week", tint = MaterialTheme.colorScheme.primary)
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .neumorphic(shape = CircleShape, elevation = 2.dp)
+                                    .clickable { viewModel.previousWeek() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Prev", tint = MaterialTheme.colorScheme.primary)
                             }
 
-                            // Format date
                             val dateStr = try {
                                 java.time.LocalDate.parse(data.week_start).format(java.time.format.DateTimeFormatter.ofPattern("dd MMM", java.util.Locale.getDefault()))
                             } catch (e: Exception) { data.week_start }
@@ -113,11 +124,18 @@ fun ExamScheduleScreen(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
 
-                            IconButton(onClick = { viewModel.nextWeek() }) {
-                                Icon(Icons.Default.ArrowForward, contentDescription = "Next Week", tint = MaterialTheme.colorScheme.primary)
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .neumorphic(shape = CircleShape, elevation = 2.dp)
+                                    .clickable { viewModel.nextWeek() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.ArrowForward, contentDescription = "Next", tint = MaterialTheme.colorScheme.primary)
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
 
                 ExamScheduleList(schedule = data.schedule)
@@ -130,8 +148,8 @@ fun ExamScheduleScreen(
 @Composable
 fun ExamScheduleList(schedule: List<DaySchedule>) {
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-        contentPadding = PaddingValues(bottom = 80.dp)
+        verticalArrangement = Arrangement.spacedBy(32.dp),
+        contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp)
     ) {
         items(schedule) { daySchedule ->
             DayExamGridItem(daySchedule)
@@ -142,16 +160,17 @@ fun ExamScheduleList(schedule: List<DaySchedule>) {
 @Composable
 fun DayExamGridItem(daySchedule: DaySchedule) {
     Column {
-        // Day Header
+        // Day Header with Neumorphism (Red for Exams)
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.error, // Red for Exams
-                shape = RoundedCornerShape(4.dp),
-                modifier = Modifier.size(width = 6.dp, height = 24.dp)
-            ) {}
+            Box(
+                modifier = Modifier
+                    .size(width = 6.dp, height = 24.dp)
+                    .neumorphic(shape = RoundedCornerShape(3.dp), elevation = 1.dp)
+                    .background(MaterialTheme.colorScheme.error, RoundedCornerShape(3.dp))
+            )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "${daySchedule.day} ${daySchedule.date}",
@@ -161,14 +180,11 @@ fun DayExamGridItem(daySchedule: DaySchedule) {
             )
         }
 
-        // Grid of Sessions (2x2)
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Row 1: S1 & S2
+        // Grid of Sessions
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val s1 = daySchedule.sessions.find { it.creneau_id == 1 }
                 val s2 = daySchedule.sessions.find { it.creneau_id == 2 }
@@ -181,10 +197,9 @@ fun DayExamGridItem(daySchedule: DaySchedule) {
                 }
             }
 
-            // Row 2: S3 & S4
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val s3 = daySchedule.sessions.find { it.creneau_id == 3 }
                 val s4 = daySchedule.sessions.find { it.creneau_id == 4 }
@@ -203,33 +218,23 @@ fun DayExamGridItem(daySchedule: DaySchedule) {
 @Composable
 fun ExamSessionCard(session: Session?, label: String, time: String) {
     val isExam = session != null && session.module != null
-    // Red accent for exams
-    val containerColor =
-        if (isExam) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant.copy(
-            alpha = 0.5f
-        )
-    val borderColor = if (isExam) MaterialTheme.colorScheme.error else Color.Transparent
-    val textColor =
-        if (isExam) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant
-    val labelColor =
-        if (isExam) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-
-    Card(
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        shape = RoundedCornerShape(16.dp),
+    
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(130.dp)
-            .border(1.dp, borderColor.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isExam) 2.dp else 0.dp)
+            .height(140.dp)
+            .neumorphic(
+                shape = RoundedCornerShape(20.dp), 
+                elevation = if (isExam) 5.dp else 2.dp,
+                darkShadowColor = if (isExam) MaterialTheme.colorScheme.error.copy(alpha = 0.25f) else NeumorphicColors.darkShadow(),
+                isPressed = !isExam
+            )
+            .padding(14.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header: Label + Time
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -239,55 +244,55 @@ fun ExamSessionCard(session: Session?, label: String, time: String) {
                     text = label,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = labelColor
+                    color = if (isExam) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
                 Text(
-                    text = time,
+                    text = time.split(" - ").first(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 11.sp
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    fontSize = 10.sp
                 )
             }
 
             if (isExam) {
                 Column {
-                    Surface(
-                        color = MaterialTheme.colorScheme.error,
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.padding(bottom = 6.dp)
+                    Box(
+                        modifier = Modifier
+                            .neumorphic(shape = RoundedCornerShape(6.dp), elevation = 1.dp)
+                            .background(MaterialTheme.colorScheme.error, RoundedCornerShape(6.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "Examen",
+                            text = "EXAMEN",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onError,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            fontWeight = FontWeight.Bold
+                            color = Color.White,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 8.sp
                         )
                     }
-
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = session?.module ?: "",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        color = textColor
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 14.sp
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surface,
-                            modifier = Modifier.padding(end = 4.dp)
-                        ) {
-                            Text(
-                                text = session?.salle ?: "",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+                    Box(
+                        modifier = Modifier
+                            .neumorphic(shape = RoundedCornerShape(6.dp), elevation = 1.dp)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = session?.salle ?: "",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             } else {
@@ -297,11 +302,13 @@ fun ExamSessionCard(session: Session?, label: String, time: String) {
                 ) {
                     Text(
                         text = "-",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
     }
 }
+

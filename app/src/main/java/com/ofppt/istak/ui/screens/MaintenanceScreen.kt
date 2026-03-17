@@ -15,6 +15,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.ofppt.istak.ui.theme.neumorphic
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+
 @Composable
 fun MaintenanceScreen(
     onRetry: () -> Unit
@@ -22,25 +27,32 @@ fun MaintenanceScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F7FA))
+            .background(MaterialTheme.colorScheme.background)
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Build,
-            contentDescription = "Maintenance",
-            modifier = Modifier.size(100.dp),
-            tint = Color(0xFFFFA000) // Amber
-        )
+        Box(
+            modifier = Modifier
+                .size(150.dp)
+                .neumorphic(shape = CircleShape, elevation = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Build,
+                contentDescription = "Maintenance",
+                modifier = Modifier.size(70.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
 
         Text(
             text = "Maintenance en cours",
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
         )
 
@@ -49,18 +61,28 @@ fun MaintenanceScreen(
         Text(
             text = "L'application est actuellement en maintenance pour améliorer nos services. Veuillez réessayer plus tard.",
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.Gray,
-            textAlign = TextAlign.Center
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(64.dp))
 
-        Button(
-            onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .neumorphic(shape = RoundedCornerShape(16.dp), elevation = 6.dp)
+                .clickable { onRetry() },
+            contentAlignment = Alignment.Center
         ) {
-            Text("Réessayer", fontSize = 16.sp)
+            Text(
+                "Réessayer", 
+                fontSize = 18.sp, 
+                fontWeight = FontWeight.Bold, 
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
+

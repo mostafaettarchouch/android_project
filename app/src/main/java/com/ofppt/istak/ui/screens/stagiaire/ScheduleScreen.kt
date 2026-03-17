@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -27,6 +28,9 @@ import com.ofppt.istak.data.model.Session
 import com.ofppt.istak.viewmodel.ScheduleUiState
 import com.ofppt.istak.viewmodel.ScheduleViewModel
 
+import com.ofppt.istak.ui.theme.neumorphic
+import com.ofppt.istak.ui.theme.NeumorphicColors
+
 @Composable
 fun ScheduleScreen(
     viewModel: ScheduleViewModel = hiltViewModel()
@@ -44,7 +48,7 @@ fun ScheduleScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 24.dp, top = 16.dp)
             )
 
         when (uiState) {
@@ -65,22 +69,26 @@ fun ScheduleScreen(
                 val data = (uiState as ScheduleUiState.Success).data
                 val currentWeekStart by viewModel.currentWeekStart.collectAsState()
 
-                // Week Navigation
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                // Neumorphic Week Navigation
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .neumorphic(shape = RoundedCornerShape(20.dp), elevation = 4.dp)
+                        .padding(8.dp)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        IconButton(onClick = { viewModel.previousWeek() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Previous Week", tint = MaterialTheme.colorScheme.primary)
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .neumorphic(shape = CircleShape, elevation = 2.dp)
+                                .clickable { viewModel.previousWeek() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Prev", tint = MaterialTheme.colorScheme.primary)
                         }
 
                         Text(
@@ -90,19 +98,28 @@ fun ScheduleScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
 
-                        IconButton(onClick = { viewModel.nextWeek() }) {
-                            Icon(Icons.Default.ArrowForward, contentDescription = "Next Week", tint = MaterialTheme.colorScheme.primary)
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .neumorphic(shape = CircleShape, elevation = 2.dp)
+                                .clickable { viewModel.nextWeek() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.ArrowForward, contentDescription = "Next", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
 
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                    shape = RoundedCornerShape(24.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.2f)),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Neumorphic Group Selection
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .neumorphic(shape = RoundedCornerShape(24.dp), elevation = 6.dp)
+                        .padding(20.dp)
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
+                    Column {
                         var expanded by remember { mutableStateOf(false) }
 
                         if (!data.available_groups.isNullOrEmpty() && data.available_groups.size > 1) {
@@ -159,6 +176,8 @@ fun ScheduleScreen(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(24.dp))
+
                 ScheduleList(schedule = data.schedule)
             }
         }
@@ -169,8 +188,8 @@ fun ScheduleScreen(
 @Composable
 fun ScheduleList(schedule: List<DaySchedule>) {
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-        contentPadding = PaddingValues(bottom = 80.dp)
+        verticalArrangement = Arrangement.spacedBy(32.dp),
+        contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp)
     ) {
         items(schedule) { daySchedule ->
             DayGridItem(daySchedule)
@@ -181,16 +200,17 @@ fun ScheduleList(schedule: List<DaySchedule>) {
 @Composable
 fun DayGridItem(daySchedule: DaySchedule) {
     Column {
-        // Day Header
+        // Day Header with Neumorphism
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(4.dp),
-                modifier = Modifier.size(width = 6.dp, height = 24.dp)
-            ) {}
+            Box(
+                modifier = Modifier
+                    .size(width = 6.dp, height = 24.dp)
+                    .neumorphic(shape = RoundedCornerShape(3.dp), elevation = 1.dp)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(3.dp))
+            )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "${daySchedule.day} ${daySchedule.date}",
@@ -200,14 +220,11 @@ fun DayGridItem(daySchedule: DaySchedule) {
             )
         }
 
-        // Grid of Sessions (2x2)
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Row 1: S1 & S2
+        // Grid of Sessions
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val s1 = daySchedule.sessions.find { it.creneau_id == 1 }
                 val s2 = daySchedule.sessions.find { it.creneau_id == 2 }
@@ -220,10 +237,9 @@ fun DayGridItem(daySchedule: DaySchedule) {
                 }
             }
 
-            // Row 2: S3 & S4
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val s3 = daySchedule.sessions.find { it.creneau_id == 3 }
                 val s4 = daySchedule.sessions.find { it.creneau_id == 4 }
@@ -242,25 +258,22 @@ fun DayGridItem(daySchedule: DaySchedule) {
 @Composable
 fun SessionCard(session: Session?, label: String, time: String) {
     val isOccupied = session != null && session.module != null
-    val containerColor = if (isOccupied) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-    val borderColor = if (isOccupied) MaterialTheme.colorScheme.outlineVariant else Color.Transparent
-
-    Card(
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        shape = RoundedCornerShape(16.dp),
+    
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(130.dp) // Fixed height for uniformity
-            .border(1.dp, borderColor, RoundedCornerShape(16.dp)),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isOccupied) 2.dp else 0.dp)
+            .height(140.dp)
+            .neumorphic(
+                shape = RoundedCornerShape(20.dp), 
+                elevation = if (isOccupied) 4.dp else 2.dp,
+                isPressed = !isOccupied
+            )
+            .padding(14.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header: Label + Time
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -270,13 +283,13 @@ fun SessionCard(session: Session?, label: String, time: String) {
                     text = label,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = if (isOccupied) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
                 Text(
-                    text = time,
+                    text = time.split(" - ").first(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 11.sp
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    fontSize = 10.sp
                 )
             }
 
@@ -288,31 +301,32 @@ fun SessionCard(session: Session?, label: String, time: String) {
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 14.sp
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            modifier = Modifier.padding(end = 4.dp)
+                        Box(
+                            modifier = Modifier
+                                .neumorphic(shape = RoundedCornerShape(6.dp), elevation = 1.dp)
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = session?.salle ?: "",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = session?.formateur ?: "",
+                    text = session?.formateur?.split(" ")?.lastOrNull() ?: "",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 9.sp
                 )
             } else {
                 Box(
@@ -320,12 +334,14 @@ fun SessionCard(session: Session?, label: String, time: String) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "-",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        text = "Libre",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
     }
 }
+

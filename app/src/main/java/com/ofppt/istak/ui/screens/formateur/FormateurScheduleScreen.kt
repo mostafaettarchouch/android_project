@@ -20,6 +20,10 @@ import com.ofppt.istak.viewmodel.FormateurScheduleViewModel
 import com.ofppt.istak.viewmodel.ScheduleUiState
 import com.ofppt.istak.ui.screens.stagiaire.DayGridItem
 
+import com.ofppt.istak.ui.theme.neumorphic
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+
 @Composable
 fun FormateurScheduleScreen(
     viewModel: FormateurScheduleViewModel = hiltViewModel()
@@ -37,7 +41,7 @@ fun FormateurScheduleScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 24.dp, top = 16.dp)
             )
 
         when (uiState) {
@@ -58,22 +62,26 @@ fun FormateurScheduleScreen(
                 val data = (uiState as ScheduleUiState.Success).data
                 val currentWeekStart by viewModel.currentWeekStart.collectAsState()
 
-                // Week Navigation
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                // Neumorphic Week Navigation
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .neumorphic(shape = RoundedCornerShape(20.dp), elevation = 4.dp)
+                        .padding(8.dp)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        IconButton(onClick = { viewModel.previousWeek() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Previous Week", tint = MaterialTheme.colorScheme.primary)
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .neumorphic(shape = CircleShape, elevation = 2.dp)
+                                .clickable { viewModel.previousWeek() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Prev", tint = MaterialTheme.colorScheme.primary)
                         }
 
                         Text(
@@ -83,15 +91,23 @@ fun FormateurScheduleScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
 
-                        IconButton(onClick = { viewModel.nextWeek() }) {
-                            Icon(Icons.Default.ArrowForward, contentDescription = "Next Week", tint = MaterialTheme.colorScheme.primary)
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .neumorphic(shape = CircleShape, elevation = 2.dp)
+                                .clickable { viewModel.nextWeek() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.ArrowForward, contentDescription = "Next", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
 
+                Spacer(modifier = Modifier.height(32.dp))
+
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp)
+                    verticalArrangement = Arrangement.spacedBy(32.dp),
+                    contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp)
                 ) {
                     items(data.schedule) { daySchedule ->
                         DayGridItem(daySchedule)
@@ -101,3 +117,4 @@ fun FormateurScheduleScreen(
         }
     }
 }}
+
